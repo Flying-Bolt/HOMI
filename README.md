@@ -148,6 +148,11 @@ URL:   http://192.168.1.50:8087/set/0_userdata.0.szene_kino?value=true
 
 Ein Schalter hat **zwei Aktionen** (Ein und Aus) und kann optional den **aktuellen Zustand anzeigen**: voll leuchtend = Ein, gedimmt = Aus, grau = unbekannt.
 
+<p align="center">
+  <img src="docs/editor-schalter.png" alt="Schalter-Konfiguration im Phone-Editor" width="300"><br>
+  <sub>Schalter im Editor — URL EIN/AUS, optionale Status-URL + Regex. (URLs hier durch Platzhalter ersetzt.)</sub>
+</p>
+
 **Du brauchst:**
 
 | Feld | Pflicht? | Wofür |
@@ -197,6 +202,11 @@ Regex AUS:   "val":false
 ### 📊 Wert — Live-Werte anzeigen
 
 Ein Wert-Button **schaltet nichts** — er **zeigt eine Zahl** aus deinem Smart-Home, z. B. `56 %`, `23.4 °C`, `420 W`. Ein Tap aktualisiert ihn sofort, dazwischen pollt HOMI im eingestellten Intervall.
+
+<p align="center">
+  <img src="docs/editor-wert.png" alt="Wert-Konfiguration im Phone-Editor" width="300"><br>
+  <sub>Wert im Editor — Wert-URL, Wert-Regex (Fang-Gruppe 1) und feste Einheit. (URL hier durch Platzhalter ersetzt.)</sub>
+</p>
 
 **Du brauchst:**
 
