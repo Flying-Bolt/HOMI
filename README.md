@@ -337,6 +337,33 @@ Antwort von `…/rpc/Shelly.GetStatus` — der Übersicht halber gekürzt (Shell
  "ws":{"connected":false}}
 ```
 
+<details>
+<summary><b>🔎 Was steckt da eigentlich alles drin? (Feld-Übersicht)</b></summary>
+
+Eine einzige `Shelly.GetStatus`-Antwort liefert dutzende Werte — hier die wichtigsten (jeder kann ein eigener HOMI-Button werden):
+
+**Netzwerk & Cloud:** `cloud.connected`, `mqtt.connected`, `ws.connected` (je `true/false`), `eth.ip` (IP-Adresse), `wifi.status` (`connected` / `disconnected`).
+
+**Eingänge:** `input:0.state`, `input:1.state` (`true/false`).
+
+**Pro Kanal** (`switch:0` / `switch:1`):
+
+| Feld | Bedeutung |
+|---|---|
+| `output` | Kanal an/aus (`true/false`) |
+| `apower` | Momentanleistung in W (**negativ = Einspeisung**) |
+| `voltage` | Spannung in V |
+| `current` | Strom in A |
+| `freq` | Netzfrequenz in Hz |
+| `pf` | Leistungsfaktor (0–1) |
+| `aenergy.total` | Zählerstand in Wh |
+| `temperature.tC` / `.tF` | Kanaltemperatur °C / °F |
+| `counts.on_time` | Einschaltdauer in s |
+
+**System (`sys`):** `mac` (MAC), `time` / `unixtime` (Uhrzeit), `uptime` (s), `ram_free` / `fs_free` (Speicher), `available_updates.stable.version` (verfügbares Update), `alt…name` / `desc` (Gerätemodell, hier „Shelly Pro 2 PM").
+
+</details>
+
 ### Das Problem: Schlüssel kommen mehrfach vor
 
 Schau genau hin: `"apower"`, `"voltage"`, `"tC"`, `"output"` gibt es **zweimal** (Kanal 0 und Kanal 1), `"connected"` sogar **dreimal** (Cloud, MQTT, WS). HOMI nimmt aber immer den **ersten** Treffer — ein nacktes `"apower":(-?[\d.]+)` liefert also stur Kanal 0.
@@ -366,7 +393,11 @@ Häng den eindeutigen Eltern-Schlüssel davor und überspringe den Rest mit `.*?
 | Kanal 1 an? *(Schalter-Status)* | `"switch:1".*?"output":(true\|false)` | Treffer → **an** |
 | MQTT verbunden? | `"mqtt":\{"connected":(true\|false)` | `true` |
 
-> 💡 **HOMI zeigt immer Fang-Gruppe 1.** Für zwei Werte (z. B. beide Kanal-Temperaturen) legst du einfach **zwei Buttons** an — jeder mit seinem eigenen Kontext-Regex. Aus einem Dual-Channel-Messgerät wird so ein hübsches 2-Button-Duo. (Ein Regex mit *zwei* Gruppen würde HOMI nicht weiterhelfen — nur Gruppe 1 wird angezeigt.)
+> 💡 **HOMI zeigt immer Fang-Gruppe 1.** Für zwei Werte (z. B. beide Kanal-Temperaturen) legst du einfach **zwei Buttons** an — jeder mit seinem eigenen Kontext-Regex. Aus einem Dual-Channel-Messgerät wird so ein hübsches 2-Button-Duo.
+
+> 🧩 **Arrays gezielt umschiffen.** Manche Felder sind Arrays, z. B. `"by_minute":[10067.719,10368.898,…]`. Willst du den Gesamtwert, ziel einfach auf den **Skalar daneben**: `"total":([\d.]+)` greift die einzelne Zahl, das `[…]`-Array bleibt unangetastet.
+
+> 🔧 **Beide Werte in einem Regex?** Für Tools, die auch *Gruppe 2* auswerten (z. B. der ioBroker-Parser-Adapter), geht's in einem Abwasch: `"switch:0".*?"tC":([-0-9.]+).*?"switch:1".*?"tC":([-0-9.]+)` legt Kanal-0-Temp in **Gruppe 1** und Kanal-1-Temp in **Gruppe 2**. **HOMI nutzt nur Gruppe 1** — hier bleibst du bei zwei Buttons mit je einem Kontext-Regex.
 
 ### Nicht nur Zahlen! 🎭
 
