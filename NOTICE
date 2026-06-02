@@ -1,0 +1,34 @@
+HOMI (codename: OpenDoor4All)
+Copyright 2026 Arno Waldmann
+
+This product includes software developed by Arno Waldmann
+(https://github.com/Flying-Bolt).
+
+Portions of this software were co-developed with Claude
+(Anthropic, model Opus 4.7) as a pair-programming assistant.
+The human author retains all rights and responsibility for the
+final implementation; AI-generated contributions were reviewed
+and integrated under the same terms as the rest of the codebase.
+
+This product is licensed under the Apache License, Version 2.0
+(the "License"); see the LICENSE file for the full text.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+---
+
+This product bundles third-party software under the following licenses:
+
+  * Jetpack Compose, AndroidX, Wear Compose      — Apache License 2.0
+  * Kotlin standard library + coroutines         — Apache License 2.0
+  * OkHttp (com.squareup.okhttp3)                — Apache License 2.0
+  * kotlinx.serialization                        — Apache License 2.0
+  * Play Services Wearable                       — Android SDK Licence
+  * CameraX, ML Kit Barcode Scanning (mobile/)   — Apache License 2.0
+  * Material Symbols (Material-Icons-Extended)   — Apache License 2.0
+
+Full third-party license terms are reproduced in the respective
+dependency artifacts. No source-form modifications were made to any
+of these dependencies — they are consumed as unmodified binary
+artifacts via Gradle.
