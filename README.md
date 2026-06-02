@@ -120,6 +120,11 @@ Alles passiert in der **Phone-App**:
 3. Mit dem **Testen**-Button prüfen, ob alles antwortet. ✅
 4. Oben auf das **Senden-Symbol (✈)** tippen → die Konfiguration wandert auf die Uhr.
 
+<p align="center">
+  <img src="docs/home-overview.png" alt="Gruppen-Übersicht in der HOMI-Phone-App" width="300"><br>
+  <sub>Die Gruppen-Übersicht in der Phone-App. Oben: Senden (✈), Teilen, QR-Import, Datei-Import.</sub>
+</p>
+
 > 💡 In allen folgenden Beispielen ist `192.168.1.50` nur ein Platzhalter — ersetze ihn durch die IP deines Geräts. Leerzeichen in URLs werden als `%20` geschrieben.
 
 ---
