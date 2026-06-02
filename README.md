@@ -125,6 +125,11 @@ Alles passiert in der **Phone-App**:
   <sub>Die Gruppen-Übersicht in der Phone-App. Oben: Senden (✈), Teilen, QR-Import, Datei-Import.</sub>
 </p>
 
+<p align="center">
+  <img src="docs/icon-picker.png" alt="Icon-Picker in der HOMI-Phone-App" width="300"><br>
+  <sub>Der Icon-Picker: kuratierte Symbole für Türen, Licht, Energie, Sensoren u. v. m. — durchsuchbar.</sub>
+</p>
+
 > 💡 In allen folgenden Beispielen ist `192.168.1.50` nur ein Platzhalter — ersetze ihn durch die IP deines Geräts. Leerzeichen in URLs werden als `%20` geschrieben.
 
 ---
