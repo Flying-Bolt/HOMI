@@ -25,6 +25,7 @@
   - [📊 Wert — Live-Werte anzeigen](#-wert--live-werte-anzeigen)
 - [HTTP-Grundlagen](#http-grundlagen)
 - [Reguläre Ausdrücke — die Geheimwaffe](#reguläre-ausdrücke--die-geheimwaffe)
+- [🔬 JSON ausschlachten](#-json-ausschlachten)
 - [🍳 Praxis-Kochbuch](#-praxis-kochbuch)
 - [Tipps & Fehlersuche](#tipps--fehlersuche)
 - [Hinweise & Einschränkungen](#hinweise--einschränkungen)
@@ -318,6 +319,88 @@ Regex AUS:   "POWER":"OFF"
 > 🧪 **Du musst nichts raten:** Der Editor hat zu jedem Typ einen **Test-Button** („Status testen" / „Wert holen"). Er ruft live deine URL auf und zeigt, was erkannt wurde — Regex anpassen, nochmal testen, fertig.
 
 > 💡 **Robustheit:** Halte Regex so locker wie nötig. `"val":\s*true` matcht auch `"val": true` (mit Leerzeichen). Für Werte ist `([\d.]+)` meist robuster als eine exakte Zahl.
+
+---
+
+## 🔬 JSON ausschlachten
+
+> **„Und was kann ich da jetzt alles rausholen?"** — Erstaunlich viel. Eine einzige Status-Antwort steckt oft voller Werte: Leistung, Spannung, Strom, Temperatur, Zählerstände, Online-Status … Mit je einem kleinen **Wert-Regex** machst du daraus dein eigenes Mini-Dashboard am Handgelenk. ⌚
+
+### Ein echtes Beispiel: Shelly Pro 2 PM (zwei Kanäle)
+
+Antwort von `…/rpc/Shelly.GetStatus` — der Übersicht halber gekürzt (Shelly liefert das in Wirklichkeit als **eine einzige Zeile**):
+
+```json
+{"cloud":{"connected":false},"mqtt":{"connected":true},
+ "switch:0":{"id":0,"output":true,"apower":-592.9,"voltage":231.6,"current":2.551,"pf":1.00,"aenergy":{"total":1559924.685},"temperature":{"tC":60.5,"tF":140.9}},
+ "switch:1":{"id":1,"output":true,"apower":3377.3,"voltage":231.7,"current":15.771,"pf":0.93,"aenergy":{"total":803062.588},"temperature":{"tC":82.3,"tF":180.1}},
+ "ws":{"connected":false}}
+```
+
+### Das Problem: Schlüssel kommen mehrfach vor
+
+Schau genau hin: `"apower"`, `"voltage"`, `"tC"`, `"output"` gibt es **zweimal** (Kanal 0 und Kanal 1), `"connected"` sogar **dreimal** (Cloud, MQTT, WS). HOMI nimmt aber immer den **ersten** Treffer — ein nacktes `"apower":(-?[\d.]+)` liefert also stur Kanal 0.
+
+### Die Lösung: Kontext davorstellen 🎯
+
+Häng den eindeutigen Eltern-Schlüssel davor und überspringe den Rest mit `.*?`:
+
+```
+"switch:1".*?"apower":(-?[\d.]+)
+   │         │
+   │         └─ .*?  = „beliebig viele Zeichen, aber so wenige wie möglich"
+   └─ erst zu Kanal 1 springen …                     (non-greedy)
+```
+
+`.*?` frisst alles zwischen Anker und Zielwert — klappt prima, weil die Antwort **eine Zeile** ist. So ziehst du jeden Wert exakt aus dem richtigen Kanal:
+
+| Du willst… | Wert-Regex | Anzeige |
+|---|---|---|
+| Leistung Kanal 0 *(negativ = Einspeisung!)* | `"switch:0".*?"apower":(-?[\d.]+)` | `-592.9` |
+| Leistung Kanal 1 | `"switch:1".*?"apower":(-?[\d.]+)` | `3377.3` |
+| Spannung Kanal 1 | `"switch:1".*?"voltage":([\d.]+)` | `231.7` |
+| Strom Kanal 1 | `"switch:1".*?"current":([\d.]+)` | `15.771` |
+| Temperatur Kanal 0 | `"switch:0".*?"tC":([\d.]+)` | `60.5` |
+| Temperatur Kanal 1 | `"switch:1".*?"tC":([\d.]+)` | `82.3` |
+| Zählerstand Kanal 1 | `"switch:1".*?"total":([\d.]+)` | `803062.588` |
+| Kanal 1 an? *(Schalter-Status)* | `"switch:1".*?"output":(true\|false)` | Treffer → **an** |
+| MQTT verbunden? | `"mqtt":\{"connected":(true\|false)` | `true` |
+
+> 💡 **HOMI zeigt immer Fang-Gruppe 1.** Für zwei Werte (z. B. beide Kanal-Temperaturen) legst du einfach **zwei Buttons** an — jeder mit seinem eigenen Kontext-Regex. Aus einem Dual-Channel-Messgerät wird so ein hübsches 2-Button-Duo. (Ein Regex mit *zwei* Gruppen würde HOMI nicht weiterhelfen — nur Gruppe 1 wird angezeigt.)
+
+### Nicht nur Zahlen! 🎭
+
+Die Fang-Gruppe darf auch **Text** oder **true/false** liefern — der Wert-Modus zeigt einfach an, was drinsteht:
+
+```json
+{"state":"charging","online":true,"mode":"eco"}
+```
+
+| Du willst… | Regex | Anzeige |
+|---|---|---|
+| Lade-Status als Text | `"state":"([^"]+)"` | `charging` |
+| Online? | `"online":(true\|false)` | `true` |
+| Betriebsmodus | `"mode":"([^"]+)"` | `eco` |
+
+### JSON-Bausteine (Spickzettel)
+
+| In der Antwort steht… | …dann nimm | Holt raus |
+|---|---|---|
+| `"x":123` (Ganzzahl) | `"x":(\d+)` | `123` |
+| `"x":12.5` (Dezimal) | `"x":([\d.]+)` | `12.5` |
+| `"x":-3.5` (auch negativ) | `"x":(-?[\d.]+)` | `-3.5` |
+| `"x":true` (Wahrheitswert) | `"x":(true\|false)` | `true` |
+| `"x":"text"` (String) | `"x":"([^"]+)"` | `text` |
+| `"x":[230,231,229]` (1. Array-Wert) | `"x":\[([\d.]+)` | `230` |
+| Schlüssel kommt mehrfach vor | `"kontext".*?"x":(…)` | gezielt der richtige |
+| evtl. Leerzeichen nach dem `:` | `"x":\s*(\d+)` | (egal) |
+
+### Drei Profi-Tipps 🧠
+
+1. **Der erste Treffer gewinnt.** Kommt ein Schlüssel mehrfach vor, gib **Kontext** mit (`"switch:1".*?…`) — sonst bekommst du immer den ersten.
+2. **Negativ & Nachkomma gratis:** `(-?[\d.]+)` deckt `-592.9`, `0`, `23.4` ab — perfekt für Einspeise-Leistung oder Außentemperatur.
+3. **Im Zweifel „Wert holen".** Ruf die URL einmal im Browser auf, schau dir die echte Antwort an und teste den Regex im Editor live — anpassen, bis die Anzeige stimmt. 30 Sekunden, fertig. ⏱️
+   *(Mini-Detail: `.*?` funktioniert, weil die Antwort eine Zeile ist. Käme das JSON jemals mit Zeilenumbrüchen, bräuchte es den „Dotall"-Modus — bei den üblichen API-Antworten nicht nötig.)*
 
 ---
 
