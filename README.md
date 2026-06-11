@@ -1,3 +1,10 @@
+> [!IMPORTANT]
+> **Dieses Repository ist umgezogen und wird auf GitHub nicht mehr gepflegt.**
+> Die aktuelle Version und die weitere Entwicklung gibt es nur noch auf Codeberg:
+> **https://codeberg.org/Flying-Bolt/HOMI**
+
+---
+
 # HOMI
 
 [![Latest Release](https://img.shields.io/github/v/release/Flying-Bolt/HOMI)](https://github.com/Flying-Bolt/HOMI/releases/latest)
